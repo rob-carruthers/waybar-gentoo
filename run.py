@@ -20,12 +20,14 @@ while True:
     if n_updates > 0:
         class_ = "pending-updates"
         tooltip = "\n".join(updates)
+        text = str(n_updates)
 
     else:
         class_ = "updated"
         tooltip = "No updates."
+        text = ""
 
-    output = {"class": class_, "alt": class_, "text": str(n_updates), "tooltip": tooltip}
+    output = {"class": class_, "alt": class_, "text": text, "tooltip": tooltip}
     print(json.dumps(output), flush=True)
 
     time.sleep(INTERVAL)
