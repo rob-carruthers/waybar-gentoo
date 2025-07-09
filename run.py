@@ -8,7 +8,7 @@ INTERVAL = 1800
 WITH_BDEPS = False
 
 
-def update_status(with_bdeps: bool) -> list[str]:
+def get_updates(with_bdeps: bool) -> list[str]:
     if with_bdeps:
         command = ["emerge", "-NupDq", "--with-bdeps", "y", "world"]
     else:
@@ -40,7 +40,7 @@ def get_json(updates: list[str]) -> dict[str, str]:
 
 def main():
     while True:
-        updates = update_status(with_bdeps=WITH_BDEPS)
+        updates = get_updates(with_bdeps=WITH_BDEPS)
         output = get_json(updates=updates)
         print(json.dumps(output), flush=True)
         time.sleep(INTERVAL)
