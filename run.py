@@ -7,7 +7,7 @@ import subprocess
 import time
 
 EIX_CACHE = "/var/cache/eix/portage.eix"
-INTERVAL = 1800
+INTERVAL = 300
 WITH_BDEPS = False
 
 
