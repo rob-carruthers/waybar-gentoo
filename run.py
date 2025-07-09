@@ -56,14 +56,27 @@ def get_db_last_updated_time() -> float | None:
     return updated_time_epoch
 
 
+def do_output(updated_time_epoch: float | None = None) -> None:
+    updates = get_updates(with_bdeps=WITH_BDEPS)
+    output = get_json(updates=updates, updated_time_epoch=updated_time_epoch)
+    print(json.dumps(output), flush=True)
+
+
 def main():
     updated_time_epoch = get_db_last_updated_time()
+    previous_update_time = updated_time_epoch
+    do_output(updated_time_epoch)
 
     while True:
-        updates = get_updates(with_bdeps=WITH_BDEPS)
-        output = get_json(updates=updates, updated_time_epoch=updated_time_epoch)
-        print(json.dumps(output), flush=True)
         time.sleep(INTERVAL)
+        updated_time_epoch = get_db_last_updated_time()
+
+        if updated_time_epoch is None or previous_update_time is None:
+            do_output(updated_time_epoch)
+
+        elif updated_time_epoch > previous_update_time:
+            previous_update_time = updated_time_epoch
+            do_output(updated_time_epoch)
 
 
 if __name__ == "__main__":
