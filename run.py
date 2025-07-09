@@ -46,12 +46,18 @@ def get_json(updates: list[str], updated_time_epoch: float | None = None) -> dic
     return output
 
 
-def main():
+def get_db_last_updated_time() -> float | None:
     cache_file = Path(EIX_CACHE)
     if cache_file.exists():
         updated_time_epoch = cache_file.stat().st_mtime
     else:
         updated_time_epoch = None
+
+    return updated_time_epoch
+
+
+def main():
+    updated_time_epoch = get_db_last_updated_time()
 
     while True:
         updates = get_updates(with_bdeps=WITH_BDEPS)
