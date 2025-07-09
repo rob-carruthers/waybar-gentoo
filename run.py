@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+from datetime import datetime
 import json
+from pathlib import Path
 import subprocess
 import time
 
+EIX_CACHE = "/var/cache/eix/portage.eix"
 INTERVAL = 1800
 WITH_BDEPS = False
 
@@ -20,7 +23,7 @@ def get_updates(with_bdeps: bool) -> list[str]:
     return updates
 
 
-def get_json(updates: list[str]) -> dict[str, str]:
+def get_json(updates: list[str], updated_time_epoch: float | None = None) -> dict[str, str]:
     n_updates = len(updates)
 
     if n_updates > 0:
@@ -33,15 +36,26 @@ def get_json(updates: list[str]) -> dict[str, str]:
         tooltip = "No updates."
         text = ""
 
+    if updated_time_epoch is not None:
+        updated_time = datetime.fromtimestamp(updated_time_epoch)
+        updated_time_formatted = updated_time.strftime("%d/%m %H:%M")
+        tooltip += f"\n\n(DB updated: {updated_time_formatted})"
+
     output = {"class": class_, "alt": class_, "text": text, "tooltip": tooltip}
 
     return output
 
 
 def main():
+    cache_file = Path(EIX_CACHE)
+    if cache_file.exists():
+        updated_time_epoch = cache_file.stat().st_mtime
+    else:
+        updated_time_epoch = None
+
     while True:
         updates = get_updates(with_bdeps=WITH_BDEPS)
-        output = get_json(updates=updates)
+        output = get_json(updates=updates, updated_time_epoch=updated_time_epoch)
         print(json.dumps(output), flush=True)
         time.sleep(INTERVAL)
 
