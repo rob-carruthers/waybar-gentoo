@@ -6,8 +6,10 @@ from pathlib import Path
 import subprocess
 import time
 
+import psutil
+
 EIX_CACHE = "/var/cache/eix/portage.eix"
-INTERVAL = 300
+INTERVAL = 5
 WITH_BDEPS = False
 
 
@@ -56,26 +58,54 @@ def get_db_last_updated_time() -> float | None:
     return updated_time_epoch
 
 
+def get_last_merge_time() -> int:
+    command = ["qlop", "-Mm"]
+    output = subprocess.run(command, capture_output=True).stdout.decode().strip()
+    lastmergetime = int(output.split("\n")[-1].split()[0])
+
+    return lastmergetime
+
+
 def do_output(updated_time_epoch: float | None = None) -> None:
     updates = get_updates(with_bdeps=WITH_BDEPS)
     output = get_json(updates=updates, updated_time_epoch=updated_time_epoch)
     print(json.dumps(output), flush=True)
 
 
+def is_emerge_running() -> bool:
+    emerge_running = False
+    for proc in psutil.process_iter(["name"]):
+        if "emerge" in proc.info["name"]:
+            emerge_running = True
+            break
+
+    return emerge_running
+
+
 def main():
     updated_time_epoch = get_db_last_updated_time()
     previous_update_time = updated_time_epoch
+
+    last_merge = get_last_merge_time()
+    previous_last_merge = last_merge
+
     do_output(updated_time_epoch)
 
     while True:
         time.sleep(INTERVAL)
+
+        if is_emerge_running():
+            continue
+
         updated_time_epoch = get_db_last_updated_time()
+        last_merge = get_last_merge_time()
 
         if updated_time_epoch is None or previous_update_time is None:
             do_output(updated_time_epoch)
 
-        elif updated_time_epoch > previous_update_time:
+        elif updated_time_epoch > previous_update_time or last_merge > previous_last_merge:
             previous_update_time = updated_time_epoch
+            previous_last_merge = last_merge
             do_output(updated_time_epoch)
 
 
