@@ -73,13 +73,11 @@ def do_output(updated_time_epoch: float | None = None) -> None:
 
 
 def is_emerge_running() -> bool:
-    emerge_running = False
     for proc in psutil.process_iter(["name"]):
         if "emerge" in proc.info["name"]:
-            emerge_running = True
-            break
+            return True
 
-    return emerge_running
+    return False
 
 
 def main():
