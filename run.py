@@ -13,6 +13,14 @@ INTERVAL = 5
 WITH_BDEPS = False
 
 
+def package_sort(line: str):
+    parts = line.split()
+    for part in parts:
+        if "/" in part:
+            return part
+    return line
+
+
 def get_updates(with_bdeps: bool) -> list[str]:
     if with_bdeps:
         command = ["emerge", "-NupDq", "--with-bdeps", "y", "world"]
@@ -21,6 +29,7 @@ def get_updates(with_bdeps: bool) -> list[str]:
 
     output = subprocess.run(command, capture_output=True).stdout.decode().split("\n")
     updates = [line for line in output if "ebuild" in line or "binary" in line]
+    updates = sorted(updates, key=package_sort)
 
     return updates
 
