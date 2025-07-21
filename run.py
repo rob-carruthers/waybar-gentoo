@@ -28,7 +28,7 @@ def get_updates(with_bdeps: bool) -> list[str]:
         command = ["emerge", "-NupDq", "world"]
 
     output = subprocess.run(command, capture_output=True).stdout.decode().split("\n")
-    updates = [line for line in output if "ebuild" in line or "binary" in line]
+    updates = [line for line in output if "[ebuild" in line or "[binary" in line]
     updates = sorted(updates, key=package_sort)
 
     return updates
