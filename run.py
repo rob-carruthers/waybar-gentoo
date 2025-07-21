@@ -9,6 +9,7 @@ import time
 import psutil
 
 EIX_CACHE = "/var/cache/eix/portage.eix"
+UPDATES_CACHE_TXT = Path.home() / "code" / "waybar-gentoo" / "updates.txt"
 INTERVAL = 5
 WITH_BDEPS = False
 
@@ -77,6 +78,10 @@ def get_last_merge_time() -> int:
 
 def do_output(updated_time_epoch: float | None = None) -> None:
     updates = get_updates(with_bdeps=WITH_BDEPS)
+
+    with open(UPDATES_CACHE_TXT, "w", encoding="utf-8") as f:
+        _ = f.write("\n".join(updates))
+
     output = get_json(updates=updates, updated_time_epoch=updated_time_epoch)
     print(json.dumps(output), flush=True)
 
